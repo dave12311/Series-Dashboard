@@ -10,6 +10,12 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
+struct SeriesEntry {
+	QString path;
+	QString name;
+	int episode;
+};
+
 class MainWindow : public QMainWindow {
 	Q_OBJECT
 
@@ -21,11 +27,12 @@ class MainWindow : public QMainWindow {
 	//Loads save data to UI and seriesTitles
 	void loadSaveData();
 
-	//Returns save data from file
-	QJsonArray readSaveFile();
+	//Return true if save data is loaded to saveDataArray
+	bool readSaveFile();
+
+	int parseEpisodeNumber(QString name);
 
 	Ui::MainWindow* ui;
-	QMetaObject::Connection newButtonConnection, removeButtonConnection;
 
 	//User home path
 	QString homePath;
@@ -33,11 +40,16 @@ class MainWindow : public QMainWindow {
 	//Save file
 	QFile* saveFile;
 
-	//List of series titles
-	QList<QString> seriesTitles;
+	//List of series entries
+	QList<SeriesEntry> seriesEntries;
+
+	QJsonArray saveDataArray;
 
   public slots:
 	void newSeries();
 	void removeSeries();
+	void openEpisode();
+	void setNext();
+	void setPrevious();
 };
 #endif // MAINWINDOW_H

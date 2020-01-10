@@ -5,6 +5,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QMessageBox>
+#include <QDesktopServices>
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
 	ui->setupUi(this);
@@ -16,8 +17,11 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
 	saveFile = new QFile(homePath + "/.seriesdashboard");
 
 	//Setup action connections
-	newButtonConnection = connect(ui->actionNew, &QAction::triggered, this, &MainWindow::newSeries);
-	removeButtonConnection = connect(ui->actionRemove, &QAction::triggered, this, &MainWindow::removeSeries);
+	connect(ui->actionNew, &QAction::triggered, this, &MainWindow::newSeries);
+	connect(ui->actionRemove, &QAction::triggered, this, &MainWindow::removeSeries);
+	connect(ui->watchButton, &QPushButton::clicked, this, &MainWindow::openEpisode);
+	connect(ui->nextButton, &QPushButton::clicked, this, &MainWindow::setNext);
+	connect(ui->previousButton, &QPushButton::clicked, this, &MainWindow::setPrevious);
 
 	//Load save data
 	loadSaveData();
@@ -31,35 +35,74 @@ MainWindow::~MainWindow() {
 void MainWindow::newSeries() {
 	QDir folder(QFileDialog::getExistingDirectory(this, "Select", homePath, QFileDialog::ShowDirsOnly));
 	QString name = folder.dirName();
+	QString path = folder.path();
 
-	if (seriesTitles.contains(name)) {
+	bool alreadyExists = false;
+
+	QList<SeriesEntry>::ConstIterator i;
+	for (i = seriesEntries.begin(); i != seriesEntries.end(); i++) {
+		if (i->name.compare(name) == 0) {
+			alreadyExists = true;
+			break;
+		}
+	}
+
+	if (alreadyExists) {
 		QMessageBox error;
 		error.critical(this, "Error", "Series already added");
 	} else {
-		//TODO: write series to save file
+		//Create new entry
+		QJsonObject newObject;
+		newObject.insert("path", path);
+		newObject.insert("episode", 1);
+
+		saveDataArray.append(newObject);
+
+		QJsonDocument writeDocument(saveDataArray);
+
+		//Write to file
+		if (saveFile->open(QIODevice::WriteOnly)) {
+			saveFile->write(writeDocument.toJson(QJsonDocument::Compact));
+			saveFile->close();
+
+			//Add to UI
+			SeriesEntry newEntry;
+			newEntry.name = name;
+			newEntry.path = path;
+			newEntry.episode = 1;
+
+			seriesEntries.append(newEntry);
+			ui->seriesBox->addItem(name);
+			ui->seriesBox->setCurrentText(name);
+		} else {
+			QMessageBox error;
+			error.critical(this, "Error",  "Could not open save file");
+		}
 	}
 }
 
 void MainWindow::removeSeries() {
-
+//TODO: remove series
 }
 
 void MainWindow::loadSaveData() {
-	QJsonArray jsonArray = readSaveFile();
-	if (!jsonArray.isEmpty()) {
-		QString name;
-		for (int i = 0; i < jsonArray.count(); i++) {
-			name = jsonArray.at(i).toObject().value("title").toString();
-			if (!name.isNull()) {
-				seriesTitles.append(name);
-				ui->seriesBox->addItem(name);
+	if (readSaveFile()) {
+		SeriesEntry newEntry;
+		QDir folder;
+		for (int i = 0; i < saveDataArray.count(); i++) {
+			folder.setPath(saveDataArray.at(i).toObject().value("path").toString());
+			newEntry.path = folder.path();
+			newEntry.name = folder.dirName();
+			newEntry.episode = 1;
+			if (!newEntry.name.isNull()) {
+				seriesEntries.append(newEntry);
+				ui->seriesBox->addItem(newEntry.name);
 			}
 		}
 	}
 }
 
-QJsonArray MainWindow::readSaveFile() {
-	QJsonArray jsonArray;
+bool MainWindow::readSaveFile() {
 	if (saveFile->exists()) {
 		if (saveFile->open(QIODevice::ReadOnly)) {
 			QByteArray data = saveFile->readAll();
@@ -71,13 +114,88 @@ QJsonArray MainWindow::readSaveFile() {
 			if (!data.isNull() && saveDocument.isNull()) {
 				QMessageBox error;
 				error.critical(this, "Parse error", "Could not parse save file");
+				return false;
 			} else {
-				jsonArray = saveDocument.array();
+				saveDataArray = saveDocument.array();
+				return true;
 			}
 		} else {
 			QMessageBox error;
 			error.critical(this, "Error", "Save file cannot be opened");
+			return false;
+		}
+	} else {
+		return false;
+	}
+}
+
+void MainWindow::openEpisode() {
+	QString name = ui->seriesBox->currentText();
+
+	const SeriesEntry* selected = nullptr;
+	QList<SeriesEntry>::ConstIterator i;
+	for (i = seriesEntries.begin(); i != seriesEntries.end(); i++) {
+		if (i->name.compare(name) == 0) {
+			selected = &*i;
+			break;
 		}
 	}
-	return jsonArray;
+
+	if (selected != nullptr) {
+		QDir folder(selected->path);
+		folder.setFilter(QDir::Files);
+		QStringList extensions;
+		extensions << "*.mkv";
+		folder.setNameFilters(extensions);
+		QStringList files = folder.entryList();
+
+		int ep;
+
+		QStringList::ConstIterator j;
+		for (j = files.begin(); j != files.end(); j++) {
+			ep = parseEpisodeNumber(*j);
+			if (ep != -1) {
+				if (ep == selected->episode) {
+					QString url = "file:";
+					url.append(folder.path());
+					url.append("/");
+					url.append(*j);
+					QDesktopServices::openUrl(QUrl(url));
+					break;
+				}
+			} else {
+				QMessageBox error;
+				error.critical(this, "RegEx Error", "Could not parse episode name");
+				break;
+			}
+		}
+	}
+
+	//TODO: replace name with actual filename
+	int ep = parseEpisodeNumber(name);
+	if (ep != -1) {
+
+	}
+}
+
+int MainWindow::parseEpisodeNumber(QString name) {
+	//Setup RegEx
+	QRegularExpression episodeFilter;
+	episodeFilter.setPattern("((?<=\\.|\\s)\\d{2,3}(?=\\.|\\s))|((?<=S\\d\\dE)\\d\\d)|((?<=S\\d\\d\\.E)\\d\\d)");
+	episodeFilter.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
+
+	QRegularExpressionMatch match = episodeFilter.match(name);
+	if (match.hasMatch()) {
+		return match.captured(0).toInt();
+	} else {
+		return -1;
+	}
+}
+
+void MainWindow::setNext() {
+
+}
+
+void MainWindow::setPrevious() {
+
 }
