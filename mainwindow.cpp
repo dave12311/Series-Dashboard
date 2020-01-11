@@ -16,6 +16,9 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
 	//Load save file
 	saveFile = new QFile(homePath + "/.seriesdashboard");
 
+	//Load config file
+	loadConfigFile();
+
 	//Setup action connections
 	connect(ui->actionNew, &QAction::triggered, this, &MainWindow::newSeries);
 	connect(ui->actionRemove, &QAction::triggered, this, &MainWindow::removeSeries);
@@ -82,7 +85,7 @@ void MainWindow::newSeries() {
 }
 
 void MainWindow::removeSeries() {
-//TODO: remove series
+//TODO: Remove series
 }
 
 void MainWindow::loadSaveData() {
@@ -93,7 +96,7 @@ void MainWindow::loadSaveData() {
 			folder.setPath(saveDataArray.at(i).toObject().value("path").toString());
 			newEntry.path = folder.path();
 			newEntry.name = folder.dirName();
-			newEntry.episode = 1;
+			newEntry.episode = saveDataArray.at(i).toObject().value("episode").toInt();
 			if (!newEntry.name.isNull()) {
 				seriesEntries.append(newEntry);
 				ui->seriesBox->addItem(newEntry.name);
@@ -111,7 +114,7 @@ bool MainWindow::readSaveFile() {
 			QJsonParseError parseError;
 			QJsonDocument saveDocument = QJsonDocument::fromJson(data, &parseError);
 
-			if (!data.isNull() && saveDocument.isNull()) {
+			if (parseError.error != QJsonParseError::NoError) {
 				QMessageBox error;
 				error.critical(this, "Parse error", "Could not parse save file");
 				return false;
@@ -145,17 +148,24 @@ void MainWindow::openEpisode() {
 		QDir folder(selected->path);
 		folder.setFilter(QDir::Files);
 		QStringList extensions;
-		extensions << "*.mkv";
+
+		QJsonArray extensionArray = parseConfig.find("extensions")->toArray();
+		for (int i = 0; i < extensionArray.count(); i++) {
+			extensions << extensionArray.at(i).toString();
+		}
 		folder.setNameFilters(extensions);
 		QStringList files = folder.entryList();
 
 		int ep;
+
+		bool found = false;
 
 		QStringList::ConstIterator j;
 		for (j = files.begin(); j != files.end(); j++) {
 			ep = parseEpisodeNumber(*j);
 			if (ep != -1) {
 				if (ep == selected->episode) {
+					found = true;
 					QString url = "file:";
 					url.append(folder.path());
 					url.append("/");
@@ -169,19 +179,18 @@ void MainWindow::openEpisode() {
 				break;
 			}
 		}
-	}
 
-	//TODO: replace name with actual filename
-	int ep = parseEpisodeNumber(name);
-	if (ep != -1) {
-
+		if (found == false) {
+			QMessageBox error;
+			error.critical(this, "Error", "Could not find episode");
+		}
 	}
 }
 
 int MainWindow::parseEpisodeNumber(QString name) {
 	//Setup RegEx
 	QRegularExpression episodeFilter;
-	episodeFilter.setPattern("((?<=\\.|\\s)\\d{2,3}(?=\\.|\\s))|((?<=S\\d\\dE)\\d\\d)|((?<=S\\d\\d\\.E)\\d\\d)");
+	episodeFilter.setPattern(parseConfig.find("regex")->toString());
 	episodeFilter.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
 
 	QRegularExpressionMatch match = episodeFilter.match(name);
@@ -193,9 +202,73 @@ int MainWindow::parseEpisodeNumber(QString name) {
 }
 
 void MainWindow::setNext() {
+	QString name = ui->seriesBox->currentText();
 
+	QJsonArray array;
+	QJsonObject object;
+
+	QList<SeriesEntry>::Iterator i;
+	for (i = seriesEntries.begin(); i != seriesEntries.end(); i++) {
+		if (i->name.compare(name) == 0) {
+			i->episode++;
+		}
+
+		object.insert("path", i->path);
+		object.insert("episode", i->episode);
+		array.append(object);
+	}
+
+	QJsonDocument writeDocument(array);
+
+	if (saveFile->open(QIODevice::WriteOnly)) {
+		saveFile->write(writeDocument.toJson(QJsonDocument::Compact));
+		saveFile->close();
+	} else {
+		QMessageBox error;
+		error.critical(this, "Error",  "Could not open save file");
+	}
 }
 
 void MainWindow::setPrevious() {
 
+}
+
+void MainWindow::loadConfigFile() {
+	QFile configFile(homePath + "/.config/seriesdashboard.json");
+
+	if (!configFile.exists()) {
+		QJsonArray extensions;
+		extensions.append("*.mkv");
+		extensions.append("*.mov");
+		extensions.append("*.mp4");
+
+		QJsonObject object;
+		object.insert("regex", "((?<=\\.|\\s)\\d{2,3}(?=\\.|\\s))|((?<=S\\d\\dE)\\d\\d)|((?<=S\\d\\d\\.E)\\d\\d)");
+		object.insert("extensions", extensions);
+
+		QJsonDocument config(object);
+
+		if (configFile.open(QIODevice::NewOnly)) {
+			configFile.write(config.toJson(QJsonDocument::Indented));
+			configFile.close();
+		} else {
+			QMessageBox error;
+			error.critical(this, "File Error", "Could not write config file");
+		}
+	} else {
+		if (configFile.open(QIODevice::ReadOnly)) {
+			QByteArray configString = configFile.readAll();
+			configFile.close();
+
+			QJsonParseError parseError;
+			QJsonDocument configDocument = QJsonDocument::fromJson(configString, &parseError);
+
+			if (parseError.error == QJsonParseError::NoError) {
+				parseConfig = configDocument.object();
+			} else {
+				QMessageBox error;
+				error.critical(this, "Parse Error", "Could not parse config file");
+			}
+		}
+	}
 }

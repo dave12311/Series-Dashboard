@@ -5,6 +5,7 @@
 #include <QMetaObject>
 #include <QFileDialog>
 #include <QJsonArray>
+#include <QJsonObject>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -24,15 +25,21 @@ class MainWindow : public QMainWindow {
 	~MainWindow();
 
   private:
+	//Generates config file /etc/seriesdashboard.json
+	void loadConfigFile();
+
 	//Loads save data to UI and seriesTitles
 	void loadSaveData();
 
 	//Return true if save data is loaded to saveDataArray
 	bool readSaveFile();
 
+	//Extract episode number from file name
 	int parseEpisodeNumber(QString name);
 
 	Ui::MainWindow* ui;
+
+	QJsonObject parseConfig;
 
 	//User home path
 	QString homePath;
