@@ -201,16 +201,25 @@ int MainWindow::parseEpisodeNumber(QString name) {
 	}
 }
 
-void MainWindow::setNext() {
+void MainWindow::changeSelectedEpisode(int num) {
 	QString name = ui->seriesBox->currentText();
 
 	QJsonArray array;
 	QJsonObject object;
 
+	bool writeEnable = true;
+
 	QList<SeriesEntry>::Iterator i;
 	for (i = seriesEntries.begin(); i != seriesEntries.end(); i++) {
 		if (i->name.compare(name) == 0) {
-			i->episode++;
+			if (i->episode > 1) {
+				i->episode += num;
+			} else {
+				QMessageBox error;
+				error.warning(this, "Error", "Episode number must be larger than 0");
+				writeEnable = false;
+				break;
+			}
 		}
 
 		object.insert("path", i->path);
@@ -220,17 +229,23 @@ void MainWindow::setNext() {
 
 	QJsonDocument writeDocument(array);
 
-	if (saveFile->open(QIODevice::WriteOnly)) {
-		saveFile->write(writeDocument.toJson(QJsonDocument::Compact));
-		saveFile->close();
-	} else {
-		QMessageBox error;
-		error.critical(this, "Error",  "Could not open save file");
+	if (writeEnable) {
+		if (saveFile->open(QIODevice::WriteOnly)) {
+			saveFile->write(writeDocument.toJson(QJsonDocument::Compact));
+			saveFile->close();
+		} else {
+			QMessageBox error;
+			error.critical(this, "Error", "Could not open save file");
+		}
 	}
 }
 
-void MainWindow::setPrevious() {
+void MainWindow::setNext() {
+	changeSelectedEpisode(1);
+}
 
+void MainWindow::setPrevious() {
+	changeSelectedEpisode(-1);
 }
 
 void MainWindow::loadConfigFile() {

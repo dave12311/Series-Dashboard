@@ -37,6 +37,9 @@ class MainWindow : public QMainWindow {
 	//Extract episode number from file name
 	int parseEpisodeNumber(QString name);
 
+	//Adds num to the currently selected episode number
+	void changeSelectedEpisode(int num);
+
 	Ui::MainWindow* ui;
 
 	QJsonObject parseConfig;
