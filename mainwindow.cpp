@@ -85,7 +85,26 @@ void MainWindow::newSeries() {
 }
 
 void MainWindow::removeSeries() {
-//TODO: Remove series
+	QString name = ui->seriesBox->currentText();
+
+	for (int i = 0; i < seriesEntries.count(); i++) {
+		if (seriesEntries[i].name.compare(name) == 0) {
+			seriesEntries.removeAt(i);
+			saveDataArray.removeAt(i);
+			ui->seriesBox->removeItem(ui->seriesBox->findText(name));
+			break;
+		}
+	}
+
+	QJsonDocument writeDocument(saveDataArray);
+
+	if (saveFile->open(QIODevice::WriteOnly)) {
+		saveFile->write(writeDocument.toJson(QJsonDocument::Compact));
+		saveFile->close();
+	} else {
+		QMessageBox error;
+		error.critical(this, "Error", "Could not open save file");
+	}
 }
 
 void MainWindow::loadSaveData() {
