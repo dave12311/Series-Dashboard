@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>700</width>
-    <height>140</height>
+    <height>143</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -52,6 +52,16 @@
        </widget>
       </item>
      </layout>
+    </item>
+    <item>
+     <widget class="QLabel" name="episodeNumber">
+      <property name="text">
+       <string>Episode:</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
     </item>
     <item>
      <widget class="Line" name="line">

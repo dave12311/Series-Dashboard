@@ -40,6 +40,8 @@ class MainWindow : public QMainWindow {
 	//Adds num to the currently selected episode number
 	void changeSelectedEpisode(int num);
 
+	void updateEpisodeLabel();
+
 	Ui::MainWindow* ui;
 
 	QJsonObject parseConfig;
@@ -54,6 +56,8 @@ class MainWindow : public QMainWindow {
 	QList<SeriesEntry> seriesEntries;
 
 	QJsonArray saveDataArray;
+
+	int labelEpisodeNumber;
 
   public slots:
 	void newSeries();

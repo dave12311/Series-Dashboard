@@ -6,6 +6,7 @@
 #include <QJsonObject>
 #include <QMessageBox>
 #include <QDesktopServices>
+#include <QLabel>
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
 	ui->setupUi(this);
@@ -25,6 +26,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
 	connect(ui->watchButton, &QPushButton::clicked, this, &MainWindow::openEpisode);
 	connect(ui->nextButton, &QPushButton::clicked, this, &MainWindow::setNext);
 	connect(ui->previousButton, &QPushButton::clicked, this, &MainWindow::setPrevious);
+	connect(ui->seriesBox, &QComboBox::currentTextChanged, this, &MainWindow::updateEpisodeLabel);
 
 	//Load save data
 	loadSaveData();
@@ -122,6 +124,8 @@ void MainWindow::loadSaveData() {
 			}
 		}
 	}
+
+	updateEpisodeLabel();
 }
 
 bool MainWindow::readSaveFile() {
@@ -231,8 +235,10 @@ void MainWindow::changeSelectedEpisode(int num) {
 	QList<SeriesEntry>::Iterator i;
 	for (i = seriesEntries.begin(); i != seriesEntries.end(); i++) {
 		if (i->name.compare(name) == 0) {
-			if (i->episode > 1) {
+			if (i->episode + num > 0) {
 				i->episode += num;
+				labelEpisodeNumber += num;
+				ui->episodeNumber->setText(QString("Episode: ").append(QString::number(labelEpisodeNumber)));
 			} else {
 				QMessageBox error;
 				error.warning(this, "Error", "Episode number must be larger than 0");
@@ -303,6 +309,17 @@ void MainWindow::loadConfigFile() {
 				QMessageBox error;
 				error.critical(this, "Parse Error", "Could not parse config file");
 			}
+		}
+	}
+}
+
+void MainWindow::updateEpisodeLabel() {
+	QString selected = ui->seriesBox->currentText();
+	for (QList<SeriesEntry>::ConstIterator i = seriesEntries.begin(); i != seriesEntries.end(); i++) {
+		if (i->name.compare(selected) == 0) {
+			labelEpisodeNumber = i->episode;
+			ui->episodeNumber->setText(QString("Episode: ").append(QString::number(labelEpisodeNumber)));
+			break;
 		}
 	}
 }
