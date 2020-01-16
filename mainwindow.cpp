@@ -11,6 +11,9 @@
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
 	ui->setupUi(this);
 
+	//Set application icon
+	setWindowIcon(QIcon(":/icon.ico"));
+
 	//Get home path
 	homePath = QStandardPaths::standardLocations(QStandardPaths::HomeLocation).first();
 
