@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Exec=/opt/Series-Dashboard/bin/Series-Dashboard
+Icon=/opt/Series-Dashboard/icon
+Terminal=false
+Name=Series Dashboard
+Comment=Application for tracking series progress
