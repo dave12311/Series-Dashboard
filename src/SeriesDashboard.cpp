@@ -1,9 +1,12 @@
-#include "seriesDashboard.h"
+#include "SeriesDashboard.h"
 
 #include <glibmm/markup.h>
 #include <iostream>
 
-seriesDashboard::seriesDashboard(int argc, char *argv[]) {
+#include <gtkmm/stack.h>
+#include <gtkmm/box.h>
+
+SeriesDashboard::SeriesDashboard(int argc, char *argv[]) {
 	app = Gtk::Application::create(argc, argv, "com.dave12311.series-dashboard");
 	builder = Gtk::Builder::create();
 
@@ -16,9 +19,15 @@ seriesDashboard::seriesDashboard(int argc, char *argv[]) {
 	}
 
 	if (builder) {
-		builder->get_widget<Gtk::Window>("seriesDashboard", window);
+		builder->get_widget<Gtk::Window>("SeriesDashboard", window);
+
+		builder->get_widget<Gtk::Stack>("stack", stack);
+		Gtk::Box *movie;
+		builder->get_widget<Gtk::Box>("series", movie);
+		//stack->set_visible_child(*static_cast<Gtk::Widget*>(movie));
+
 		status = app->run(*window);
 	} else {
-		status = 404;
+		status = 100;
 	}
 }

@@ -11,6 +11,6 @@ pkg_check_modules(JSON REQUIRED nlohmann_json)
 include_directories(${GTKMM_INCLUDE_DIRS} ${CURLPP_INCLUDE_DIRS} ${JSON_INCLUDE_DIRS})
 link_directories(${GTKMM_LIBRARY_DIRS} ${CURLPP_LIBRARY_DIRS} ${JSON_LIBRARY_DIRS})
 
-add_executable(Series_Dashboard src/main.cpp src/seriesDashboard.cpp src/seriesDashboard.h)
+add_executable(Series_Dashboard src/main.cpp src/SeriesDashboard.cpp src/SeriesDashboard.h src/SeriesEntry.cpp src/SeriesEntry.h)
 
 target_link_libraries(Series_Dashboard ${GTKMM_LIBRARIES} ${CURLPP_LIBRARIES} ${JSON_LIBRARIES})
