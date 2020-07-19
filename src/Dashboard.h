@@ -10,6 +10,11 @@
 #include <gtkmm/button.h>
 #include <gtkmm/filechooserdialog.h>
 
+#include "Entry.h"
+#include "Config.h"
+
+#include <vector>
+
 namespace seriesdashboard {
 	class Dashboard {
 	public:
@@ -20,6 +25,8 @@ namespace seriesdashboard {
 	private:
 		int status = -1;
 
+		std::unique_ptr<seriesdashboard::Config> config;
+
 		Glib::RefPtr<Gtk::Application> app;
 		Glib::RefPtr<Gtk::Builder> builder;
 
@@ -27,18 +34,30 @@ namespace seriesdashboard {
 		Gtk::Stack *mainStack;
 		Gtk::Stack *dashboardStack;
 
-		Gtk::Button *addnewButton;
-		Gtk::FileChooserDialog *fileChooserDialog;
+		std::vector<seriesdashboard::Entry> series;
 
-
-		// Number of added series
-		uint16_t seriesCount = 0;
-
-		void getBuilderWidgets();
+		/**
+		 * Set up menu button connections.
+		 */
 		void setupConnections();
 
+		/**
+		 * Throw an error dialog
+		 * @param message String to display as error
+		 */
+		void errorDialog(std::string message);
+
+		/**
+		 * Create a new series entry.
+		 * @param path Path of the selected folder
+		 */
+		void addSeries(const std::string &path);
+
+		/**
+		 * "Add new" button clicked
+		 */
 		void onNewClicked();
 	};
 }
 
-#endif
+#endif //SERIES_DASHBOARD_DASHBOARD_H

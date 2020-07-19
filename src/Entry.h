@@ -8,11 +8,18 @@
 namespace seriesdashboard {
 	class Entry {
 	public:
+
+		Entry(const std::string &path);
+
+		/**
+		 * Open next episode in default media player.
+		 */
 		void open();
 
 	private:
-		std::filesystem::path seriesFolderPath;
-		unsigned int currentEpisode;
+		std::string name;
+		std::filesystem::path folderPath;
+		unsigned int nextEpisode;
 		seriesdashboard::Apidata metadata;
 	};
 }

@@ -3,10 +3,14 @@
 
 #include <filesystem>
 #include <vector>
+#include <fstream>
 
 #include "Entry.h"
 
 #include <nlohmann/json.hpp>
+
+#define DEFAULT_EPISODE_NUM_REGEX "((?<=\\.|\\s)\\d{2,3}(?=\\.|\\s))|((?<=S\\d\\dE)\\d\\d)|((?<=S\\d\\d\\.E)\\d\\d)"
+#define DEFAULT_NAME_REGEX "TODO: REGEX"
 
 namespace seriesdashboard {
 	class Config {
