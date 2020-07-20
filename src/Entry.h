@@ -3,7 +3,7 @@
 
 #include <filesystem>
 
-#include "Apidata.h"
+#include "ApiData.h"
 
 namespace seriesdashboard {
 	class Entry {
@@ -20,7 +20,7 @@ namespace seriesdashboard {
 		std::string name;
 		std::filesystem::path folderPath;
 		unsigned int nextEpisode;
-		seriesdashboard::Apidata metadata;
+		seriesdashboard::ApiData metadata;
 	};
 }
 

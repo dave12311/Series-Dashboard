@@ -9,8 +9,8 @@
 
 #include <nlohmann/json.hpp>
 
-#define DEFAULT_EPISODE_NUM_REGEX "((?<=\\.|\\s)\\d{2,3}(?=\\.|\\s))|((?<=S\\d\\dE)\\d\\d)|((?<=S\\d\\d\\.E)\\d\\d)"
-#define DEFAULT_NAME_REGEX "TODO: REGEX"
+#define DEFAULT_EPISODE_NUM_REGEX "((?<=\\.|\\s)\\d{2,3}(?=\\.|\\s))|((?<=S\\d\\dE)\\d\\d)|((?<=S\\d\\d(\\.|\\s)E)\\d\\d)"
+#define DEFAULT_NAME_REGEX "^.+((?=S\\d\\d)|(?=\\d\\d\\.\\w+$))"
 
 namespace seriesdashboard {
 	class Config {
@@ -19,7 +19,7 @@ namespace seriesdashboard {
 
 	private:
 		std::filesystem::path configPath;
-		nlohmann::json configJSON;
+		nlohmann::json configJson;
 
 		std::vector<Entry> series;
 	};

@@ -6,6 +6,7 @@
 #include <gtkmm/stack.h>
 #include <gtkmm/box.h>
 #include <gtkmm/messagedialog.h>
+#include <gtkmm/menuitem.h>
 
 seriesdashboard::Dashboard::Dashboard(int argc, char *argv[]) {
 	app = Gtk::Application::create(argc, argv, "com.dave12311.series-dashboard");
@@ -26,6 +27,13 @@ seriesdashboard::Dashboard::Dashboard(int argc, char *argv[]) {
 
 		builder->get_widget<Gtk::Stack>("stack_main", mainStack);
 		builder->get_widget<Gtk::Stack>("stack_dashboard", dashboardStack);
+
+		builder->get_widget<Gtk::FileChooserDialog>("FileDialog", fileChooserDialog);
+		fileChooserDialog->add_button("Select", Gtk::ResponseType::RESPONSE_OK);
+
+		builder->get_widget<Gtk::Dialog>("Preferences", preferences);
+		preferences->add_button("Cancel", Gtk::ResponseType::RESPONSE_CANCEL);
+		preferences->add_button("Save", Gtk::ResponseType::RESPONSE_APPLY);
 
 		// TODO: REMOVE -START-
 		Gtk::Box *movie;
@@ -58,7 +66,7 @@ seriesdashboard::Dashboard::Dashboard(int argc, char *argv[]) {
 	}
 }
 
-void seriesdashboard::Dashboard::errorDialog(std::string message) {
+void seriesdashboard::Dashboard::errorDialog(std::string message) noexcept {
 	Gtk::MessageDialog errorDialog(message);
 	errorDialog.set_title("Error");
 	errorDialog.run();
@@ -69,19 +77,21 @@ int seriesdashboard::Dashboard::getStatus() {
 	return status;
 }
 
-void seriesdashboard::Dashboard::setupConnections() {
+void seriesdashboard::Dashboard::setupConnections() noexcept {
+	// Add new
 	Gtk::Button *addNewButton;
 	builder->get_widget<Gtk::Button>("new_button", addNewButton);
 
 	addNewButton->signal_clicked().connect(sigc::mem_fun(this, &Dashboard::onNewClicked));
+
+	// Preferences
+	Gtk::MenuItem *preferencesButton;
+	builder->get_widget<Gtk::MenuItem>("menu_pref", preferencesButton);
+
+	preferencesButton->signal_activate().connect(sigc::mem_fun(this, &Dashboard::onPreferencesClicked));
 }
 
 void seriesdashboard::Dashboard::onNewClicked() {
-	Gtk::FileChooserDialog *fileChooserDialog;
-	builder->get_widget<Gtk::FileChooserDialog>("FileDialog", fileChooserDialog);
-
-	fileChooserDialog->add_button("Select", Gtk::ResponseType::RESPONSE_OK);
-
 	std::string path;
 
 	if (fileChooserDialog->run() == Gtk::ResponseType::RESPONSE_OK) {
@@ -91,6 +101,22 @@ void seriesdashboard::Dashboard::onNewClicked() {
 	fileChooserDialog->close();
 
 	addSeries(path);
+}
+
+void seriesdashboard::Dashboard::onPreferencesClicked() {
+	int result = preferences->run();
+	switch (result) {
+		case Gtk::ResponseType::RESPONSE_CANCEL:
+			preferences->close();
+			break;
+		case Gtk::RESPONSE_DELETE_EVENT:
+			preferences->close();
+			break;
+		case Gtk::ResponseType::RESPONSE_APPLY:
+			// TODO: Save regex to config
+			preferences->close();
+			break;
+	}
 }
 
 void seriesdashboard::Dashboard::addSeries(const std::string &path) {

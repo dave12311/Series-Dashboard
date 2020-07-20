@@ -34,18 +34,21 @@ namespace seriesdashboard {
 		Gtk::Stack *mainStack;
 		Gtk::Stack *dashboardStack;
 
+		Gtk::FileChooserDialog *fileChooserDialog;
+		Gtk::Dialog *preferences;
+
 		std::vector<seriesdashboard::Entry> series;
 
 		/**
 		 * Set up menu button connections.
 		 */
-		void setupConnections();
+		void setupConnections() noexcept;
 
 		/**
 		 * Throw an error dialog
 		 * @param message String to display as error
 		 */
-		void errorDialog(std::string message);
+		void errorDialog(std::string message) noexcept;
 
 		/**
 		 * Create a new series entry.
@@ -57,6 +60,11 @@ namespace seriesdashboard {
 		 * "Add new" button clicked
 		 */
 		void onNewClicked();
+
+		/**
+		 * "Preferences" menu item clicked
+		 */
+		 void onPreferencesClicked();
 	};
 }
 

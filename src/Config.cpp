@@ -16,13 +16,13 @@ seriesdashboard::Config::Config() {
 	if (!std::filesystem::exists(configPath)) {
 
 		// Create default config
-		configJSON["EpisodeNumberRegex"] = DEFAULT_EPISODE_NUM_REGEX;
-		configJSON["SeriesNameRegex"] = DEFAULT_NAME_REGEX;
-		configJSON["SeriesEntries"] = nlohmann::json::array();
+		configJson["EpisodeNumberRegex"] = DEFAULT_EPISODE_NUM_REGEX;
+		configJson["NameRegex"] = DEFAULT_NAME_REGEX;
+		configJson["SeriesEntries"] = nlohmann::json::array();
 
 		// Write config to file
 		std::filesystem::create_directory(configPath.parent_path());
-		std::string configString = configJSON.dump(2);
+		std::string configString = configJson.dump(2);
 		std::ofstream writer;
 		writer.open(configPath);
 
@@ -39,7 +39,7 @@ seriesdashboard::Config::Config() {
 
 		if (reader.is_open()) {
 			std::string config((std::istreambuf_iterator<char>(reader)), (std::istreambuf_iterator<char>()));
-			configJSON = nlohmann::json::parse(config);
+			configJson = nlohmann::json::parse(config);
 		} else {
 			throw std::system_error(EIO, std::generic_category(), "Could not load config file");
 		}

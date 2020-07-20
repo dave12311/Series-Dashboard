@@ -4,7 +4,7 @@
 #include <string>
 
 namespace seriesdashboard {
-	class Apidata {
+	class ApiData {
 	public:
 
 	private:
