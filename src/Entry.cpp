@@ -4,10 +4,12 @@
 
 #include <curlpp/cURLpp.hpp>
 
-seriesdashboard::Entry::Entry(const std::string &path) : folderPath(path) {
+namespace seriesdashboard {
+	Entry::Entry(const std::string &path) : folderPath(path) {
 
-}
+	}
 
-void seriesdashboard::Entry::open() {
+	void Entry::open() {
 
+	}
 }

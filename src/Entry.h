@@ -20,7 +20,7 @@ namespace seriesdashboard {
 		std::string name;
 		std::filesystem::path folderPath;
 		unsigned int nextEpisode;
-		seriesdashboard::ApiData metadata;
+		ApiData metadata;
 	};
 }
 

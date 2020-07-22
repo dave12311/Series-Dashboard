@@ -17,6 +17,10 @@ namespace seriesdashboard {
 	public:
 		Config();
 
+		std::string getNameRegEx();
+
+		std::string getEpisodeRegEx();
+
 	private:
 		std::filesystem::path configPath;
 		nlohmann::json configJson;

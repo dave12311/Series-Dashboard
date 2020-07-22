@@ -12,6 +12,7 @@
 
 #include "Entry.h"
 #include "Config.h"
+#include "PreferencesWindow.h"
 
 #include <vector>
 
@@ -34,8 +35,8 @@ namespace seriesdashboard {
 		Gtk::Stack *mainStack;
 		Gtk::Stack *dashboardStack;
 
-		Gtk::FileChooserDialog *fileChooserDialog;
-		Gtk::Dialog *preferences;
+		Gtk::FileChooserDialog *fileChooserDialog;	// TODO: Move to AddNewWindow
+		std::unique_ptr<seriesdashboard::PreferencesWindow> preferences;
 
 		std::vector<seriesdashboard::Entry> series;
 
@@ -60,11 +61,6 @@ namespace seriesdashboard {
 		 * "Add new" button clicked
 		 */
 		void onNewClicked();
-
-		/**
-		 * "Preferences" menu item clicked
-		 */
-		 void onPreferencesClicked();
 	};
 }
 
