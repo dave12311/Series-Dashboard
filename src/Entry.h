@@ -9,7 +9,7 @@ namespace seriesdashboard {
 	class Entry {
 	public:
 
-		Entry(const std::string &path);
+		explicit Entry(const std::string &path);
 
 		/**
 		 * Open next episode in default media player.
@@ -19,7 +19,7 @@ namespace seriesdashboard {
 	private:
 		std::string name;
 		std::filesystem::path folderPath;
-		unsigned int nextEpisode;
+		unsigned int nextEpisode = 1;
 		ApiData metadata;
 	};
 }

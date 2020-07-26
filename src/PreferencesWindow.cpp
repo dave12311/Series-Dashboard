@@ -5,7 +5,7 @@
 #include <iostream>
 
 namespace seriesdashboard {
-	PreferencesWindow::PreferencesWindow(std::unique_ptr<Config> &c, Glib::RefPtr<Gtk::Builder> b) : config(c),
+	PreferencesWindow::PreferencesWindow(std::unique_ptr<Config> &c, Glib::RefPtr<Gtk::Builder> &b) : config(c),
 																									 builder(b) {
 		builder->get_widget<Gtk::Dialog>("Preferences", dialog);
 
@@ -15,8 +15,8 @@ namespace seriesdashboard {
 		nameRegExBuffer = Gtk::TextBuffer::create();
 		episodeRegExBuffer = Gtk::TextBuffer::create();
 
-		nameRegExBuffer->set_text(config->getNameRegEx());
-		episodeRegExBuffer->set_text(config->getEpisodeRegEx());
+		nameRegExBuffer->set_text(config->getNameRegEx().getExpression());
+		episodeRegExBuffer->set_text(config->getEpisodeRegEx().getExpression());
 
 		Gtk::TextView *nameRegExBox, *episodeRegExBox;
 		builder->get_widget("name_regex", nameRegExBox);
@@ -29,17 +29,12 @@ namespace seriesdashboard {
 	void PreferencesWindow::run() {
 		int result = dialog->run();
 
-		switch (result) {
-			case Gtk::ResponseType::RESPONSE_CANCEL:
-				dialog->close();
-				break;
-			case Gtk::RESPONSE_DELETE_EVENT:
-				dialog->close();
-				break;
-			case Gtk::ResponseType::RESPONSE_APPLY:
-				// TODO: Save regex to config
-				dialog->close();
-				break;
+		if(result == Gtk::ResponseType::RESPONSE_APPLY) {
+			// TODO: Verify regex
+			// TODO: Save regex to config
+			dialog->close();	// Only if correct!
+		} else {
+			dialog->close();
 		}
 	}
 }

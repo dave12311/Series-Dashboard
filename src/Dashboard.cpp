@@ -69,14 +69,14 @@ namespace seriesdashboard {
 		}
 	}
 
-	void Dashboard::errorDialog(std::string message) noexcept {
+	void Dashboard::errorDialog(const std::string& message) noexcept {
 		Gtk::MessageDialog errorDialog(message);
 		errorDialog.set_title("Error");
 		errorDialog.run();
 		app->quit();
 	}
 
-	int Dashboard::getStatus() {
+	int Dashboard::getStatus() const {
 		return status;
 	}
 
@@ -108,5 +108,7 @@ namespace seriesdashboard {
 
 	void Dashboard::addSeries(const std::string &path) {
 		Entry newEntry(path);
+		series.push_back(newEntry);
+		// TODO: Add series
 	}
 }

@@ -11,13 +11,13 @@
 namespace seriesdashboard {
 	class PreferencesWindow {
 	public:
-		PreferencesWindow(std::unique_ptr<Config> &c, Glib::RefPtr<Gtk::Builder> b);
+		PreferencesWindow(std::unique_ptr<Config> &c, Glib::RefPtr<Gtk::Builder> &b);
 
 		void run();
 
 	private:
 		Glib::RefPtr<Gtk::Builder> builder;
-		Gtk::Dialog *dialog;
+		Gtk::Dialog *dialog = nullptr;
 
 		std::unique_ptr<Config> &config;
 

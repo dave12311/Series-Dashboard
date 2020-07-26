@@ -1,9 +1,35 @@
 #include "Config.h"
 
 #include <iostream>
-#include <sstream>
+#include <utility>
+#include <algorithm>
 
 namespace seriesdashboard {
+	StringRegex &StringRegex::operator=(std::string &&str) {
+		expression = std::move(str);
+
+		std::string escaped;
+		escaped.reserve(expression.size());
+		for (char i : expression) {
+			if(i == '(' || i == ')') {
+				escaped.push_back('\\');
+			}
+			escaped.push_back(i);
+		}
+
+		regex = escaped;
+
+		return *this;
+	}
+
+	const std::string &StringRegex::getExpression() noexcept {
+		return expression;
+	}
+
+	const std::regex &StringRegex::getRegEx() noexcept {
+		return regex;
+	}
+
 	Config::Config() {
 #ifdef __WIN32__
 		// TODO: Windows path
@@ -16,14 +42,20 @@ namespace seriesdashboard {
 		// Check if config file exists
 		if (!std::filesystem::exists(configPath)) {
 
+			// Set defaults
+			episodeRegEx = DEFAULT_EPISODE_NUM_REGEX;
+			nameRegEx = DEFAULT_NAME_REGEX;
+
 			// Create default config
-			configJson["EpisodeNumberRegex"] = DEFAULT_EPISODE_NUM_REGEX;
-			configJson["NameRegex"] = DEFAULT_NAME_REGEX;
-			configJson["SeriesEntries"] = nlohmann::json::array();
+			nlohmann::json json;
+
+			json[EPISODE_REGEX_KEY] = DEFAULT_EPISODE_NUM_REGEX;
+			json[NAME_REGEX_KEY] = DEFAULT_NAME_REGEX;
+			json[ENTRIES_KEY] = nlohmann::json::array();
 
 			// Write config to file
 			std::filesystem::create_directory(configPath.parent_path());
-			std::string configString = configJson.dump(2);
+			std::string configString = json.dump(2);
 			std::ofstream writer;
 			writer.open(configPath);
 
@@ -40,7 +72,20 @@ namespace seriesdashboard {
 
 			if (reader.is_open()) {
 				std::string config((std::istreambuf_iterator<char>(reader)), (std::istreambuf_iterator<char>()));
-				configJson = nlohmann::json::parse(config);
+				nlohmann::json json;
+				json = nlohmann::json::parse(config);
+
+				if (json[EPISODE_REGEX_KEY].empty()) {
+					episodeRegEx = DEFAULT_EPISODE_NUM_REGEX;
+				} else {
+					episodeRegEx = json[EPISODE_REGEX_KEY];
+				}
+
+				if (json[NAME_REGEX_KEY].empty()) {
+					nameRegEx = DEFAULT_NAME_REGEX;
+				} else {
+					nameRegEx = json[NAME_REGEX_KEY];
+				}
 
 				// TODO: Parse series data
 			} else {
@@ -49,11 +94,11 @@ namespace seriesdashboard {
 		}
 	}
 
-	std::string Config::getNameRegEx() {
-		return configJson["NameRegex"];
+	StringRegex &Config::getNameRegEx() noexcept {
+		return nameRegEx;
 	}
 
-	std::string Config::getEpisodeRegEx() {
-		return configJson["EpisodeNumberRegex"];
+	StringRegex &Config::getEpisodeRegEx() noexcept {
+		return episodeRegEx;
 	}
 }
