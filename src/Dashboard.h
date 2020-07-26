@@ -46,7 +46,7 @@ namespace seriesdashboard {
 		void setupConnections() noexcept;
 
 		/**
-		 * Throw an error dialog
+		 * Display an error dialog then quit the application [FATAL ERROR].
 		 * @param message String to display as error
 		 */
 		void errorDialog(const std::string& message) noexcept;
@@ -58,7 +58,7 @@ namespace seriesdashboard {
 		void addSeries(const std::string &path);
 
 		/**
-		 * "Add new" button clicked
+		 * "Add new" button clicked.
 		 */
 		void onNewClicked();
 	};

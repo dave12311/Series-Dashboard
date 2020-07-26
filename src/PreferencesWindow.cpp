@@ -1,16 +1,22 @@
 #include "PreferencesWindow.h"
 
 #include <gtkmm/textview.h>
-
-#include <iostream>
+#include <gtkmm/messagedialog.h>
 
 namespace seriesdashboard {
 	PreferencesWindow::PreferencesWindow(std::unique_ptr<Config> &c, Glib::RefPtr<Gtk::Builder> &b) : config(c),
-																									 builder(b) {
+																									  builder(b) {
 		builder->get_widget<Gtk::Dialog>("Preferences", dialog);
 
-		dialog->add_button("Cancel", Gtk::ResponseType::RESPONSE_CANCEL);
-		dialog->add_button("Save", Gtk::ResponseType::RESPONSE_APPLY);
+		Gtk::Button *defaultButton, *cancelButton, *saveButton;
+
+		builder->get_widget<Gtk::Button>("pref_default", defaultButton);
+		builder->get_widget<Gtk::Button>("pref_cancel", cancelButton);
+		builder->get_widget<Gtk::Button>("pref_save", saveButton);
+
+		defaultButton->signal_clicked().connect(sigc::mem_fun(this, &PreferencesWindow::onDefaultClicked));
+		cancelButton->signal_clicked().connect(sigc::mem_fun(this, &PreferencesWindow::onCancelClicked));
+		saveButton->signal_clicked().connect(sigc::mem_fun(this, &PreferencesWindow::onSaveClicked));
 
 		nameRegExBuffer = Gtk::TextBuffer::create();
 		episodeRegExBuffer = Gtk::TextBuffer::create();
@@ -28,14 +34,41 @@ namespace seriesdashboard {
 
 	void PreferencesWindow::run() {
 		int result = dialog->run();
+		if (result == Gtk::ResponseType::RESPONSE_DELETE_EVENT) {
+			dialog->close();
+		}
+	}
 
-		if(result == Gtk::ResponseType::RESPONSE_APPLY) {
-			// TODO: Verify regex
-			// TODO: Save regex to config
-			dialog->close();	// Only if correct!
+	void PreferencesWindow::errorMessage(std::string &&error) noexcept {
+		Gtk::MessageDialog errorDialog(error);
+		errorDialog.set_title("RegEx Error");
+		errorDialog.run();
+		errorDialog.close();
+		dialog->present();
+	}
+
+	void PreferencesWindow::onSaveClicked() {
+		if (nameRegExBuffer->get_text() != config->getNameRegEx().getExpression()) {
+			if (!config->setNameRegEx(nameRegExBuffer->get_text())) {
+				errorMessage("Incorrect series name RegEx!");
+			} else {
+				config->write();
+				dialog->close();
+			}
+		} else if (episodeRegExBuffer->get_text() != config->getEpisodeRegEx().getExpression()) {
+			if (!config->setEpisodeRegEx(episodeRegExBuffer->get_text())) {
+				errorMessage("Incorrect episode number RegEx!");
+			} else {
+				config->write();
+				dialog->close();
+			}
 		} else {
 			dialog->close();
 		}
+	}
+
+	void PreferencesWindow::onDefaultClicked() {
+
 	}
 }
 

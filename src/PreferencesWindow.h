@@ -13,6 +13,9 @@ namespace seriesdashboard {
 	public:
 		PreferencesWindow(std::unique_ptr<Config> &c, Glib::RefPtr<Gtk::Builder> &b);
 
+		/**
+		 * Open Preferences window.
+		 */
 		void run();
 
 	private:
@@ -22,6 +25,14 @@ namespace seriesdashboard {
 		std::unique_ptr<Config> &config;
 
 		Glib::RefPtr<Gtk::TextBuffer> nameRegExBuffer, episodeRegExBuffer;
+
+		void errorMessage(std::string &&error) noexcept;
+
+		void onSaveClicked();
+
+		inline void onCancelClicked() { dialog->close(); }
+
+		void onDefaultClicked();
 	};
 }
 

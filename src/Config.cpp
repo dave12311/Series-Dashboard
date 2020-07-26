@@ -6,28 +6,29 @@
 
 namespace seriesdashboard {
 	StringRegex &StringRegex::operator=(std::string &&str) {
-		expression = std::move(str);
 
+		// Add escape character before parentheses
 		std::string escaped;
-		escaped.reserve(expression.size());
-		for (char i : expression) {
-			if(i == '(' || i == ')') {
-				escaped.push_back('\\');
-			}
-			escaped.push_back(i);
-		}
+		escapeParentheses(str, escaped);
 
-		regex = escaped;
+		try {
+			regex = escaped;
+			expression = std::move(str);
+		} catch (std::regex_error &error) {
+			throw error;
+		}
 
 		return *this;
 	}
 
-	const std::string &StringRegex::getExpression() noexcept {
-		return expression;
-	}
-
-	const std::regex &StringRegex::getRegEx() noexcept {
-		return regex;
+	void StringRegex::escapeParentheses(const std::string &from, std::string &to) noexcept {
+		to.reserve(from.size());
+		for (char i : from) {
+			if (i == '(' || i == ')') {
+				to.push_back('\\');
+			}
+			to.push_back(i);
+		}
 	}
 
 	Config::Config() {
@@ -46,25 +47,9 @@ namespace seriesdashboard {
 			episodeRegEx = DEFAULT_EPISODE_NUM_REGEX;
 			nameRegEx = DEFAULT_NAME_REGEX;
 
-			// Create default config
-			nlohmann::json json;
-
-			json[EPISODE_REGEX_KEY] = DEFAULT_EPISODE_NUM_REGEX;
-			json[NAME_REGEX_KEY] = DEFAULT_NAME_REGEX;
-			json[ENTRIES_KEY] = nlohmann::json::array();
-
 			// Write config to file
 			std::filesystem::create_directory(configPath.parent_path());
-			std::string configString = json.dump(2);
-			std::ofstream writer;
-			writer.open(configPath);
-
-			if (writer.is_open()) {
-				writer << configString << std::endl << std::endl;
-				writer.close();
-			} else {
-				throw std::system_error(EIO, std::generic_category(), "Could not create config file");
-			}
+			write();
 		} else {
 			// Read config file
 			std::ifstream reader;
@@ -78,13 +63,26 @@ namespace seriesdashboard {
 				if (json[EPISODE_REGEX_KEY].empty()) {
 					episodeRegEx = DEFAULT_EPISODE_NUM_REGEX;
 				} else {
-					episodeRegEx = json[EPISODE_REGEX_KEY];
+					try {
+						episodeRegEx = json[EPISODE_REGEX_KEY];
+					} catch (std::regex_error &error) {
+						std::cerr << "Invalid episode number regex in config file!\nUsing defaults...\n" << error.what()
+								  << std::endl;
+						episodeRegEx = DEFAULT_EPISODE_NUM_REGEX;
+					}
+
 				}
 
 				if (json[NAME_REGEX_KEY].empty()) {
 					nameRegEx = DEFAULT_NAME_REGEX;
 				} else {
-					nameRegEx = json[NAME_REGEX_KEY];
+					try {
+						nameRegEx = json[NAME_REGEX_KEY];
+					} catch (std::regex_error &error) {
+						std::cerr << "Invalid series name regex in config file!\nUsing defaults...\n" << error.what()
+								  << std::endl;
+						nameRegEx = DEFAULT_NAME_REGEX;
+					}
 				}
 
 				// TODO: Parse series data
@@ -94,11 +92,23 @@ namespace seriesdashboard {
 		}
 	}
 
-	StringRegex &Config::getNameRegEx() noexcept {
-		return nameRegEx;
-	}
+	void Config::write() {
+		nlohmann::json json;
 
-	StringRegex &Config::getEpisodeRegEx() noexcept {
-		return episodeRegEx;
+		json[EPISODE_REGEX_KEY] = episodeRegEx.getExpression();
+		json[NAME_REGEX_KEY] = nameRegEx.getExpression();
+		json[ENTRIES_KEY] = nlohmann::json::array();	//TODO: Convert episode entries to JSON
+
+		// Write config to file
+		std::string configString = json.dump(2);
+		std::ofstream writer;
+		writer.open(configPath);
+
+		if (writer.is_open()) {
+			writer << configString << std::endl << std::endl;
+			writer.close();
+		} else {
+			throw std::system_error(EIO, std::generic_category(), "Could not create config file");
+		}
 	}
 }

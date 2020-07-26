@@ -132,12 +132,48 @@
         <child internal-child="action_area">
           <object class="GtkButtonBox">
             <property name="can_focus">False</property>
+            <property name="margin_bottom">5</property>
+            <property name="hexpand">True</property>
             <property name="layout_style">end</property>
             <child>
-              <placeholder/>
+              <object class="GtkButton" id="pref_default">
+                <property name="label" translatable="yes">Defaults</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+                <property name="secondary">True</property>
+              </packing>
             </child>
             <child>
-              <placeholder/>
+              <object class="GtkButton" id="pref_cancel">
+                <property name="label" translatable="yes">Cancel</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="pref_save">
+                <property name="label" translatable="yes">Save</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
             </child>
           </object>
           <packing>
@@ -180,6 +216,7 @@
                 <property name="right_margin">10</property>
                 <property name="top_margin">5</property>
                 <property name="bottom_margin">5</property>
+                <property name="accepts_tab">False</property>
                 <property name="monospace">True</property>
               </object>
               <packing>
@@ -218,6 +255,7 @@
                 <property name="right_margin">10</property>
                 <property name="top_margin">5</property>
                 <property name="bottom_margin">5</property>
+                <property name="accepts_tab">False</property>
                 <property name="monospace">True</property>
               </object>
               <packing>
