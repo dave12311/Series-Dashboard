@@ -66,9 +66,5 @@ namespace seriesdashboard {
 			dialog->close();
 		}
 	}
-
-	void PreferencesWindow::onDefaultClicked() {
-
-	}
 }
 

@@ -30,9 +30,14 @@ namespace seriesdashboard {
 
 		void onSaveClicked();
 
-		inline void onCancelClicked() { dialog->close(); }
+		inline void onCancelClicked() noexcept { dialog->close(); }
 
-		void onDefaultClicked();
+		inline void onDefaultClicked() noexcept {
+			config->setDefaults();
+			nameRegExBuffer->set_text(DEFAULT_NAME_REGEX);
+			episodeRegExBuffer->set_text(DEFAULT_EPISODE_NUM_REGEX);
+			config->write();
+		}
 	};
 }
 

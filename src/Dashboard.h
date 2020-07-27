@@ -21,7 +21,7 @@ namespace seriesdashboard {
 	public:
 		Dashboard(int argc, char *argv[]);
 
-		int getStatus() const;
+		[[nodiscard]] inline int getStatus() const { return status; }
 
 	private:
 		int status = -1;
@@ -35,7 +35,7 @@ namespace seriesdashboard {
 		Gtk::Stack *mainStack = nullptr;
 		Gtk::Stack *dashboardStack = nullptr;
 
-		Gtk::FileChooserDialog *fileChooserDialog = nullptr;	// TODO: Move to AddNewWindow
+		Gtk::FileChooserDialog *fileChooserDialog = nullptr;    // TODO: Move to FileBrowserDialog
 		std::unique_ptr<seriesdashboard::PreferencesWindow> preferences;
 
 		std::vector<seriesdashboard::Entry> series;
@@ -49,7 +49,7 @@ namespace seriesdashboard {
 		 * Display an error dialog then quit the application [FATAL ERROR].
 		 * @param message String to display as error
 		 */
-		void errorDialog(const std::string& message) noexcept;
+		void errorDialog(const std::string &message) noexcept;
 
 		/**
 		 * Create a new series entry.

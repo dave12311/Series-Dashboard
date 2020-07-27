@@ -30,7 +30,7 @@ namespace seriesdashboard {
 			builder->get_widget<Gtk::Stack>("stack_main", mainStack);
 			builder->get_widget<Gtk::Stack>("stack_dashboard", dashboardStack);
 
-			// TODO: Move to AddNewWindow
+			// TODO: Move to FileBrowserDialog
 			// Set up file chooser
 			builder->get_widget<Gtk::FileChooserDialog>("FileDialog", fileChooserDialog);
 			fileChooserDialog->add_button("Select", Gtk::ResponseType::RESPONSE_OK);
@@ -74,10 +74,6 @@ namespace seriesdashboard {
 		errorDialog.set_title("Error");
 		errorDialog.run();
 		app->quit();
-	}
-
-	int Dashboard::getStatus() const {
-		return status;
 	}
 
 	void Dashboard::setupConnections() noexcept {

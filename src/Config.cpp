@@ -43,9 +43,7 @@ namespace seriesdashboard {
 		// Check if config file exists
 		if (!std::filesystem::exists(configPath)) {
 
-			// Set defaults
-			episodeRegEx = DEFAULT_EPISODE_NUM_REGEX;
-			nameRegEx = DEFAULT_NAME_REGEX;
+			setDefaults();
 
 			// Write config to file
 			std::filesystem::create_directory(configPath.parent_path());
